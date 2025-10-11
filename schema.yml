@@ -1,0 +1,7 @@
+openapi: 3.0.3
+info:
+  title: Tutor Butor
+  version: 1.0.0
+  description: The website connecting tutors and students
+paths: {}
+components: {}
