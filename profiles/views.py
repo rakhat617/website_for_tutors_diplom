@@ -1,8 +1,8 @@
 from rest_framework import generics, viewsets, permissions
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 
-from users.models import User
-from profiles.serializers import ProfileSerializer, TutorListSerializer
+from users.models import User, Subject
+from profiles.serializers import ProfileSerializer, TutorListSerializer, SubjectSerializer
 
 
 @extend_schema(
@@ -23,6 +23,18 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+@extend_schema(
+    tags=["Предметы"],
+    summary="Список всех предметов",
+    description="Возвращает список всех предметов, которые могут выбрать репетиторы.",
+    responses={200: OpenApiResponse(response=SubjectSerializer)},
+)
+class SubjectListView(generics.ListAPIView):
+    queryset = Subject.objects.all()
+    serializer_class = SubjectSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 @extend_schema(tags=["Репетиторы"])
@@ -46,3 +58,14 @@ class TutorViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.order_by(ordering)
 
         return queryset
+
+@extend_schema(
+    tags=["Профиль"],
+    summary="Просмотр профиля репетитора",
+    description="Возвращает публичные данные конкретного репетитора по ID.",
+    responses={200: OpenApiResponse(response=ProfileSerializer)},
+)
+class PublicProfileView(generics.RetrieveAPIView):
+    queryset = User.objects.filter(role="tutor", is_active=True)
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.AllowAny]
