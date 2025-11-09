@@ -10,9 +10,11 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(!!token);
   }, []);
 
-  const login = (access, refresh) => {
+  const login = (access, refresh, user_id, username) => {
     localStorage.setItem("access_token", access);
     localStorage.setItem("refresh_token", refresh);
+    localStorage.setItem("user_id", user_id);
+    localStorage.setItem("username", username);
     setIsAuthenticated(true);
   };
 

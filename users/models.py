@@ -15,7 +15,8 @@ class User(AbstractUser):
     )
     role = models.CharField(
         max_length=10, 
-        choices=ROLE_CHOICES
+        choices=ROLE_CHOICES,
+        db_index=True
         )
     bio = models.TextField(
         blank=True, 
@@ -30,10 +31,12 @@ class User(AbstractUser):
         max_digits=8, 
         decimal_places=2, 
         null=True, 
-        blank=True
+        blank=True,
+        db_index=True
         )
     rating = models.FloatField(
-        default=0
+        default=0,
+        db_index=True
         )
 
     activation_code = models.UUIDField(

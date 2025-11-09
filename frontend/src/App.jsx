@@ -7,6 +7,7 @@ import ProfilePage from "./pages/ProfilePage";
 import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TutorProfile from "./pages/TutorProfile";
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/activate/:code" element={<ActivateAccountPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route
             path="/profile"
             element={

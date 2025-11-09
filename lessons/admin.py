@@ -1,8 +1,6 @@
 from django.contrib import admin
 
-from lessons.models import LessonSlot
-from lessons.models import Booking
+from lessons.models import TimeSlot
 
-admin.site.register(LessonSlot)
-admin.site.register(Booking)
+admin.site.register(TimeSlot)
 

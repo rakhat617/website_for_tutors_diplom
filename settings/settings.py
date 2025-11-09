@@ -44,10 +44,12 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     "corsheaders",
+    "channels",
+    "daphne",
     "users.apps.UsersConfig",
     "profiles.apps.ProfilesConfig",
     "lessons.apps.LessonsConfig",
-    "chat.apps.ChatConfig",
+    "chat",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -85,7 +87,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'settings.wsgi.application'
+ASGI_APPLICATION = 'settings.asgi.application'
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -148,6 +159,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
 }
 
 
@@ -181,3 +197,15 @@ AUTHENTICATION_BACKENDS = [
     "users.backends.UsernameOrEmailBackend",  # наш кастомный
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    # ...другие если нужны
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# Настройки сессии/куков
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SAMESITE = "Lax"  # или "None" + secure если https

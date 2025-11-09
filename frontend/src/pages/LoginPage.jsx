@@ -17,7 +17,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const data = await loginUser(formData);
-      login(data.access, data.refresh); // 👈 сохраняем токены и обновляем контекст
+      login(data.access, data.refresh, data.user.id, data.user.username); // 👈 сохраняем токены и обновляем контекст
       setMessage("✅ Успешный вход!");
       navigate("/"); // 👈 переходим на главную
     } catch (error) {

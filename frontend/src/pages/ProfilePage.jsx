@@ -1,28 +1,27 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../api/axios";
 import { getProfile } from "../api/api";
+import { useNavigate } from "react-router-dom";
+import TutorCalendar from "../components/TutorCalendar";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
-  const [subjects, setSubjects] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  // 🔹 Получаем профиль и список предметов
   useEffect(() => {
     const fetchData = async () => {
       try {
         const profileData = await getProfile();
         setProfile(profileData);
         setFormData({
+          first_name: profileData.first_name || "",
+          last_name: profileData.last_name || "",
           bio: profileData.bio || "",
           price_per_hour: profileData.price_per_hour || "",
-          subject_ids: profileData.subjects.map((s) => s.id) || [],
         });
-
-        const res = await axiosInstance.get("profiles/subjects/");
-        setSubjects(res.data);
       } catch (error) {
         console.error("Ошибка при загрузке профиля:", error);
       }
@@ -30,48 +29,66 @@ export default function ProfilePage() {
     fetchData();
   }, []);
 
-  // 🔹 Изменение полей формы
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // 🔹 Изменение списка предметов (мультиселект)
-  const handleSubjectChange = (e) => {
-    const values = Array.from(e.target.selectedOptions, (option) => option.value);
-    setFormData({ ...formData, subject_ids: values });
-  };
-
-  // 🔹 Сохранение изменений
   const handleSave = async () => {
     try {
       const res = await axiosInstance.patch("/profiles/me/", formData);
       setProfile(res.data);
       setIsEditing(false);
-      setMessage("✅ Профиль успешно обновлён!");
-    } catch (error) {
-      console.error(error);
+      setMessage("✅ Профиль обновлён!");
+    } catch {
       setMessage("❌ Ошибка при сохранении изменений.");
     }
   };
 
-  if (!profile) return <p>Загрузка...</p>;
+  if (!profile) return <p style={{ textAlign: "center" }}>Загрузка...</p>;
 
   return (
-    <div style={styles.container}>
-      <h2>Профиль</h2>
+    <div style={styles.page}>
+      {/* Левая часть — профиль */}
+      <div style={styles.profileCard}>
+        <h2 style={styles.title}>Мой профиль</h2>
+        {message && <p style={styles.message}>{message}</p>}
 
-      {message && <p>{message}</p>}
-
-      <div style={styles.info}>
         <p><b>Имя пользователя:</b> {profile.username}</p>
         <p><b>Email:</b> {profile.email}</p>
-        <p><b>Роль:</b> {profile.role === "tutor" ? "Репетитор" : "Студент"}</p>
+        <p>
+          <b>Роль:</b>{" "}
+          {profile.role === "tutor" ? "Репетитор" : "Ученик"}
+        </p>
 
-        <div style={{ marginTop: "15px" }}>
-          <b>Описание:</b><br />
+        <div style={styles.field}>
+          <b>Имя:</b>
+          {isEditing ? (
+            <input
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleChange}
+              style={styles.input}
+            />
+          ) : (
+            <p>{profile.first_name}</p>
+          )}
+        </div>
+
+        <div style={styles.field}>
+          <b>Фамилия:</b>
+          {isEditing ? (
+            <input
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleChange}
+              style={styles.input}
+            />
+          ) : (
+            <p>{profile.last_name}</p>
+          )}
+        </div>
+
+        <div style={styles.field}>
+          <b>Описание:</b>
           {isEditing ? (
             <textarea
               name="bio"
@@ -84,66 +101,56 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {profile.role === "tutor" && (
-          <>
-            <div style={{ marginTop: "15px" }}>
-              <b>Цена за час:</b><br />
-              {isEditing ? (
-                <input
-                  type="number"
-                  name="price_per_hour"
-                  value={formData.price_per_hour}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              ) : (
-                <p>{profile.price_per_hour ? `${profile.price_per_hour}₸` : "—"}</p>
-              )}
-            </div>
+        <div style={styles.field}>
+          <b>Цена за час:</b>
+          {isEditing ? (
+            <input
+              name="price_per_hour"
+              type="number"
+              value={formData.price_per_hour}
+              onChange={handleChange}
+              style={styles.input}
+            />
+          ) : (
+            <p>
+              {profile.price_per_hour
+                ? `${profile.price_per_hour} ₸`
+                : "Не указана"}
+            </p>
+          )}
+        </div>
 
-            <div style={{ marginTop: "15px" }}>
-              <b>Предметы:</b><br />
-              {isEditing ? (
-                <select
-                  multiple
-                  name="subject_ids"
-                  value={formData.subject_ids}
-                  onChange={handleSubjectChange}
-                  style={styles.select}
-                >
-                  {subjects.map((subj) => (
-                    <option key={subj.id} value={subj.id}>
-                      {subj.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <ul>
-                  {profile.subjects.length > 0
-                    ? profile.subjects.map((s) => <li key={s.id}>{s.name}</li>)
-                    : "—"}
-                </ul>
-              )}
-            </div>
-          </>
+        {!isEditing ? (
+          <button onClick={() => setIsEditing(true)} style={styles.buttonEdit}>
+            ✏️ Редактировать профиль
+          </button>
+        ) : (
+          <div>
+            <button onClick={handleSave} style={styles.buttonSave}>
+              💾 Сохранить
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              style={styles.buttonCancel}
+            >
+              ❌ Отмена
+            </button>
+          </div>
         )}
+
+        <button
+          onClick={() => navigate("/chat")}
+          style={styles.buttonChat}
+        >
+          💬 Открыть чаты
+        </button>
       </div>
 
-      {!isEditing ? (
-        <button onClick={() => setIsEditing(true)} style={styles.buttonEdit}>
-          ✏️ Редактировать профиль
-        </button>
-      ) : (
-        <div>
-          <button onClick={handleSave} style={styles.buttonSave}>
-            💾 Сохранить
-          </button>
-          <button
-            onClick={() => setIsEditing(false)}
-            style={styles.buttonCancel}
-          >
-            ❌ Отмена
-          </button>
+      {/* Правая часть — календарь (только если репетитор) */}
+      {profile.role === "tutor" && (
+        <div style={styles.calendarContainer}>
+          <h3 style={styles.calendarTitle}>📅 Моё расписание</h3>
+          <TutorCalendar />
         </div>
       )}
     </div>
@@ -151,61 +158,100 @@ export default function ProfilePage() {
 }
 
 const styles = {
-  container: {
-    maxWidth: "500px",
+  page: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: "30px",
+    maxWidth: "1200px",
     margin: "40px auto",
     padding: "20px",
+  },
+  profileCard: {
+    flex: "1 1 350px",
+    maxWidth: "400px",
     border: "1px solid #ddd",
     borderRadius: "10px",
+    padding: "20px",
+    backgroundColor: "#fff",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
   },
-  info: {
-    lineHeight: "1.6",
+  title: {
+    fontSize: "22px",
+    marginBottom: "15px",
+    color: "#333",
+  },
+  field: {
+    marginTop: "15px",
   },
   input: {
     width: "100%",
     padding: "8px",
     borderRadius: "5px",
     border: "1px solid #ccc",
+    marginTop: "5px",
   },
   textarea: {
     width: "100%",
-    height: "80px",
+    height: "70px",
     padding: "8px",
     borderRadius: "5px",
     border: "1px solid #ccc",
-  },
-  select: {
-    width: "100%",
-    padding: "8px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
+    marginTop: "5px",
   },
   buttonEdit: {
-    marginTop: "15px",
-    padding: "10px",
+    marginTop: "20px",
     backgroundColor: "#007bff",
     color: "white",
     border: "none",
     borderRadius: "5px",
+    padding: "10px 15px",
     cursor: "pointer",
   },
   buttonSave: {
-    marginTop: "15px",
+    marginTop: "20px",
     marginRight: "10px",
-    padding: "10px",
     backgroundColor: "#28a745",
     color: "white",
     border: "none",
     borderRadius: "5px",
+    padding: "10px 15px",
     cursor: "pointer",
   },
   buttonCancel: {
-    marginTop: "15px",
-    padding: "10px",
+    marginTop: "20px",
     backgroundColor: "#dc3545",
     color: "white",
     border: "none",
     borderRadius: "5px",
+    padding: "10px 15px",
     cursor: "pointer",
+  },
+  buttonChat: {
+    marginTop: "25px",
+    padding: "10px 20px",
+    backgroundColor: "#6c63ff",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    width: "100%",
+    cursor: "pointer",
+  },
+  calendarContainer: {
+    flex: "1 1 600px",
+    minWidth: "500px",
+    backgroundColor: "#fff",
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "20px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  },
+  calendarTitle: {
+    fontSize: "18px",
+    marginBottom: "10px",
+  },
+  message: {
+    color: "#28a745",
   },
 };

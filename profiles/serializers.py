@@ -25,6 +25,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "username",
+            "first_name",
+            "last_name",
             "email",
             "role",
             "bio",
@@ -50,6 +52,8 @@ class TutorListSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "username",
+            "first_name",
+            "last_name",
             "bio",
             "subjects",     # read-only
             "subject_ids",  # write-only
