@@ -61,6 +61,7 @@ export default function TutorCalendar() {
     let bgColor = "#f0f0f0"; // обычный
     if (isPast) bgColor = "#ccc"; // прошлое
     if (existing) bgColor = "#28a745"; // слот занят/создан
+    if (isBooked) bgColor = "#dc3545";
     if (isToday && !isPast && !existing) bgColor = "#d0e7ff"; // сегодня, свободный
 
     // Подсказка для слота

@@ -4,10 +4,12 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true); // новое состояние загрузки
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     setIsAuthenticated(!!token);
+    setLoading(false); // проверка завершена
   }, []);
 
   const login = (access, refresh, user_id, username) => {
@@ -25,7 +27,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

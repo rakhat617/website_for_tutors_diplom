@@ -3,13 +3,14 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
-  if (!isAuthenticated) {
-    // Если пользователь не авторизован — перенаправляем на логин
-    return <Navigate to="/login" replace />;
-  }
+  // Пока идёт проверка токена — показываем спиннер или просто текст
+  if (loading) return <p>Загрузка...</p>;
 
-  // Если авторизован — рендерим дочерний компонент (например, ProfilePage)
+  // Если не авторизован — редирект на логин
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  // Если авторизован — рендерим дочерний компонент
   return children;
 }

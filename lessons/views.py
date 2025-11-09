@@ -1,7 +1,8 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, serializers
 from rest_framework.exceptions import PermissionDenied
-from .models import TimeSlot
-from .serializers import TimeSlotSerializer
+from rest_framework.response import Response
+from lessons.models import TimeSlot, Booking
+from lessons.serializers import TimeSlotSerializer, BookingSerializer
 from django.utils.dateparse import parse_date
 
 class TimeSlotListCreateView(generics.ListCreateAPIView):
@@ -76,3 +77,58 @@ class TimeSlotListByTutorView(generics.ListAPIView):
             qs = qs.filter(start_time__date__lte=end_date)
 
         return qs.order_by("start_time")
+
+
+class BookingListCreateView(generics.ListCreateAPIView):
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == "tutor":
+            return Booking.objects.filter(timeslot__tutor=user).select_related("timeslot", "student")
+        else:
+            return Booking.objects.filter(student=user).select_related("timeslot", "timeslot__tutor")
+
+    def perform_create(self, serializer):
+        timeslot = serializer.validated_data["timeslot"]
+        serializer.save(
+            student=self.request.user,
+            timeslot=timeslot,
+            subject=serializer.validated_data.get("subject"),
+            status="pending"
+        )
+
+
+class BookingUpdateStatusView(generics.UpdateAPIView):
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Booking.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        booking = self.get_object()
+
+        # Только репетитор своего слота может менять статус
+        if booking.timeslot.tutor != request.user:
+            return Response(
+                {"detail": "Вы не можете изменить этот booking."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        new_status = request.data.get("status")
+        if new_status not in ["accepted", "rejected"]:
+            return Response(
+                {"detail": "Некорректный статус."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        booking.status = new_status
+        booking.save()
+
+        # если приняли — слот становится забронированным
+        if new_status == "accepted":
+            booking.timeslot.is_booked = True
+            booking.timeslot.save()
+
+        return Response(BookingSerializer(booking).data)
+

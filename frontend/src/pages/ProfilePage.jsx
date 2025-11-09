@@ -3,12 +3,15 @@ import axiosInstance from "../api/axios";
 import { getProfile } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import TutorCalendar from "../components/TutorCalendar";
+import TutorBookings from "../components/TutorBookings";
+import StudentBookings from "../components/StudentBookings";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [message, setMessage] = useState("");
+  const [subjects, setSubjects] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +24,12 @@ export default function ProfilePage() {
           last_name: profileData.last_name || "",
           bio: profileData.bio || "",
           price_per_hour: profileData.price_per_hour || "",
+          subject_ids: profileData.subjects.map((s) => s.id) || [],
         });
+
+        // Получаем все предметы с бэка
+        const res = await axiosInstance.get("profiles/subjects/");
+        setSubjects(res.data);
       } catch (error) {
         console.error("Ошибка при загрузке профиля:", error);
       }
@@ -31,6 +39,11 @@ export default function ProfilePage() {
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubjectsChange = (e) => {
+    const values = Array.from(e.target.selectedOptions, (option) => option.value);
+    setFormData({ ...formData, subject_ids: values });
+  };
 
   const handleSave = async () => {
     try {
@@ -47,17 +60,13 @@ export default function ProfilePage() {
 
   return (
     <div style={styles.page}>
-      {/* Левая часть — профиль */}
       <div style={styles.profileCard}>
         <h2 style={styles.title}>Мой профиль</h2>
         {message && <p style={styles.message}>{message}</p>}
 
         <p><b>Имя пользователя:</b> {profile.username}</p>
         <p><b>Email:</b> {profile.email}</p>
-        <p>
-          <b>Роль:</b>{" "}
-          {profile.role === "tutor" ? "Репетитор" : "Ученик"}
-        </p>
+        <p><b>Роль:</b> {profile.role === "tutor" ? "Репетитор" : "Ученик"}</p>
 
         <div style={styles.field}>
           <b>Имя:</b>
@@ -101,24 +110,47 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div style={styles.field}>
-          <b>Цена за час:</b>
-          {isEditing ? (
-            <input
-              name="price_per_hour"
-              type="number"
-              value={formData.price_per_hour}
-              onChange={handleChange}
-              style={styles.input}
-            />
-          ) : (
-            <p>
-              {profile.price_per_hour
-                ? `${profile.price_per_hour} ₸`
-                : "Не указана"}
-            </p>
-          )}
-        </div>
+        {profile.role === "tutor" && (
+          <>
+            <div style={styles.field}>
+              <b>Цена за час:</b>
+              {isEditing ? (
+                <input
+                  name="price_per_hour"
+                  type="number"
+                  value={formData.price_per_hour}
+                  onChange={handleChange}
+                  style={styles.input}
+                />
+              ) : (
+                <p>{profile.price_per_hour ? `${profile.price_per_hour} ₸` : "Не указана"}</p>
+              )}
+            </div>
+
+            <div style={styles.field}>
+              <b>Предметы:</b><br />
+              {isEditing ? (
+                <select
+                  multiple
+                  name="subject_ids"
+                  value={formData.subject_ids}
+                  onChange={handleSubjectsChange}
+                  style={styles.select}
+                >
+                  {subjects.map((subj) => (
+                    <option key={subj.id} value={subj.id}>{subj.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <ul>
+                  {profile.subjects.length > 0
+                    ? profile.subjects.map((s) => <li key={s.id}>{s.name}</li>)
+                    : "—"}
+                </ul>
+              )}
+            </div>
+          </>
+        )}
 
         {!isEditing ? (
           <button onClick={() => setIsEditing(true)} style={styles.buttonEdit}>
@@ -129,35 +161,49 @@ export default function ProfilePage() {
             <button onClick={handleSave} style={styles.buttonSave}>
               💾 Сохранить
             </button>
-            <button
-              onClick={() => setIsEditing(false)}
-              style={styles.buttonCancel}
-            >
+            <button onClick={() => setIsEditing(false)} style={styles.buttonCancel}>
               ❌ Отмена
             </button>
           </div>
         )}
 
-        <button
-          onClick={() => navigate("/chat")}
-          style={styles.buttonChat}
-        >
+        <button onClick={() => navigate("/chat")} style={styles.buttonChat}>
           💬 Открыть чаты
         </button>
       </div>
 
-      {/* Правая часть — календарь (только если репетитор) */}
-      {profile.role === "tutor" && (
-        <div style={styles.calendarContainer}>
-          <h3 style={styles.calendarTitle}>📅 Моё расписание</h3>
-          <TutorCalendar />
-        </div>
-      )}
+      <div style={styles.rightColumn}>
+        {profile.role === "tutor" ? (
+          <>
+            <div style={styles.calendarContainer}>
+              <h3 style={styles.calendarTitle}>📅 Моё расписание</h3>
+              <TutorCalendar />
+            </div>
+            <div style={styles.bookingsContainer}>
+              <h3 style={styles.calendarTitle}>📨 Заявки от учеников</h3>
+              <TutorBookings />
+            </div>
+          </>
+        ) : (
+          <div style={styles.bookingsContainer}>
+            <h3 style={styles.calendarTitle}>📖 Мои бронирования</h3>
+            <StudentBookings />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
+  select: {
+    width: "100%",
+    padding: "8px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    marginTop: "5px",
+    minHeight: "100px",
+  },
   page: {
     display: "flex",
     flexWrap: "wrap",
@@ -176,6 +222,31 @@ const styles = {
     padding: "20px",
     backgroundColor: "#fff",
     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  },
+  rightColumn: {
+    flex: "1 1 600px",
+    minWidth: "500px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "25px",
+  },
+  calendarContainer: {
+    backgroundColor: "#fff",
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "20px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  },
+  bookingsContainer: {
+    backgroundColor: "#fff",
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "20px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  },
+  calendarTitle: {
+    fontSize: "18px",
+    marginBottom: "10px",
   },
   title: {
     fontSize: "22px",
@@ -237,19 +308,6 @@ const styles = {
     borderRadius: "5px",
     width: "100%",
     cursor: "pointer",
-  },
-  calendarContainer: {
-    flex: "1 1 600px",
-    minWidth: "500px",
-    backgroundColor: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: "10px",
-    padding: "20px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-  },
-  calendarTitle: {
-    fontSize: "18px",
-    marginBottom: "10px",
   },
   message: {
     color: "#28a745",
