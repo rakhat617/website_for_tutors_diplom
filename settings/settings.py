@@ -1,5 +1,7 @@
+from datetime import timedelta
 from pathlib import Path
 from decouple import config
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -209,3 +211,26 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = "Lax"  # или "None" + secure если https
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Almaty'
+CELERY_ENABLE_UTC = False
+
+CELERY_BEAT_SCHEDULE = {
+    'send-hour-reminders-every-10-min': {
+        'task': 'lessons.tasks.send_upcoming_lesson_reminders',
+        'schedule': crontab(minute='*/10'),  # каждые 10 минут
+    },
+    "auto_start_lessons_every_minute": {
+        "task": "lessons.tasks.auto_start_lessons",
+        "schedule": timedelta(seconds=60),
+    },
+    "reject-expired-pending-bookings": {
+        "task": "lessons.tasks.reject_expired_pending_bookings",
+        "schedule": timedelta(minutes=30),
+    },
+}

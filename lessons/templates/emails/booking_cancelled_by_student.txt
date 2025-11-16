@@ -1,0 +1,6 @@
+Здравствуйте, {{ tutor.first_name }}!
+
+Студент {{ student.first_name }} {{ student.last_name }} отменил заявку
+на урок по предмету "{{ subject_name }}" ({{ timeslot.start_time }}).
+
+Теперь это время снова доступно для бронирования другими студентами.

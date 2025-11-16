@@ -1,0 +1,6 @@
+Здравствуйте, {{ student.first_name }}!
+
+Вашу заявку на урок по предмету "{{ subject_name }}" принял репетитор {{ tutor.first_name }} {{ tutor.last_name }}.
+Дата и время: {{ timeslot.start_time }}
+
+Не забудьте подготовиться!

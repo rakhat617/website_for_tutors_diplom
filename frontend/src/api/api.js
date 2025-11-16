@@ -14,6 +14,7 @@ export const loginUser = async (data) => {
   localStorage.setItem("refresh_token", response.data.refresh);
   localStorage.setItem('user_id', response.data.user.id);
   localStorage.setItem('username', response.data.user.username);
+  localStorage.setItem('role', response.data.user.role);
   return response.data;
 };
 

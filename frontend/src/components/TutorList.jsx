@@ -172,7 +172,7 @@ export default function TutorList() {
               <p>Ничего не найдено</p>
             ) : (
               tutors.map((tutor) => (
-                <div key={tutor.id} style={styles.card} onClick={() => navigate(`/tutors/${tutor.id}`)}>
+                <div key={tutor.id} style={styles.card} onClick={() => navigate(`/profiles/${tutor.id}`)}>
                   <h3 style={styles.username}>
                     {`${tutor.first_name || ""} ${tutor.last_name || ""}`.trim()}
                   </h3>

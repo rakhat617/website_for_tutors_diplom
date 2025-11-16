@@ -56,5 +56,21 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.role})"
 
+
 class Subject(models.Model):
     name = models.CharField(max_length=100, unique=True)
+
+
+class Review(models.Model):
+    tutor = models.ForeignKey(
+        to=User, related_name="reviews", on_delete=models.CASCADE
+    )
+    student = models.ForeignKey(
+        to=User, related_name="given_reviews", on_delete=models.CASCADE
+    )
+    rating = models.PositiveSmallIntegerField()
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("tutor", "student")  # только один отзыв от студента

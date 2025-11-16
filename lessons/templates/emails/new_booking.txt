@@ -1,0 +1,7 @@
+Здравствуйте, {{ tutor.first_name }}!
+
+Поступила новая заявка от студента {{ student.first_name }} {{ student.last_name }}.
+Предмет: {{ subject_name }}
+Время: {{ timeslot.start_time }}
+
+Зайдите в свой профиль, чтобы принять или отклонить заявку.

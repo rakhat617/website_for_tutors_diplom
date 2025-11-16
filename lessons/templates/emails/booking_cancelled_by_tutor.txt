@@ -1,0 +1,6 @@
+Здравствуйте, {{ student.first_name }}!
+
+Репетитор {{ tutor.first_name }} {{ tutor.last_name }} отменил принятый урок
+по предмету "{{ subject_name }}" ({{ timeslot.start_time }}).
+
+Пожалуйста, выберите другого репетитора или другое время.

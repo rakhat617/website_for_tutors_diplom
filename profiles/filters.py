@@ -10,7 +10,6 @@ class TutorFilter(django_filters.FilterSet):
     min_rating = django_filters.NumberFilter(field_name="rating", lookup_expr="gte")
 
     def filter_search(self, queryset, name, value):
-        print(">>> Фильтр вызван, значение:", value)
         return queryset.filter(
             Q(first_name__icontains=value) |
             Q(last_name__icontains=value) |

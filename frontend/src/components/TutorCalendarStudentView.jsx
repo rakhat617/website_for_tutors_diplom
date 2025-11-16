@@ -29,11 +29,11 @@ export default function TutorCalendarStudentView({ tutorId }) {
       const slotsData = res.data || [];
       setSlots(slotsData);
 
-      // Получаем уникальные предметы репетитора
+      // получаем уникальные предметы репетитора
       if (slotsData.length > 0) {
         const tutorSubjects = slotsData[0].tutor.subjects; // массив объектов {id, name}
         setSubjects(tutorSubjects);
-        if (tutorSubjects.length > 0) setSelectedSubject(tutorSubjects[0].id); // по умолчанию первый
+        if (tutorSubjects.length > 0) setSelectedSubject(tutorSubjects[0].id);
       }
     } catch (err) {
       console.error("Ошибка загрузки тайм-слотов:", err);
@@ -44,7 +44,7 @@ export default function TutorCalendarStudentView({ tutorId }) {
   };
 
   const handleBooking = async (slot) => {
-    if (!slot || slot.is_booked) return;
+    if (!slot || slot.is_booked || slot.is_student_booked) return;
 
     if (!selectedSubject) {
       alert("❌ Пожалуйста, выберите предмет");
@@ -57,14 +57,12 @@ export default function TutorCalendarStudentView({ tutorId }) {
           "DD MMM, HH:mm"
         )} по выбранному предмету?`
       )
-    ) {
-      return;
-    }
+    ) return;
 
     try {
       const res = await axiosInstance.post("/lessons/bookings/", {
         timeslot_id: slot.id,
-        subject_id: selectedSubject, // добавляем выбранный предмет
+        subject_id: selectedSubject,
       });
 
       if (res.status === 201) {
@@ -87,7 +85,7 @@ export default function TutorCalendarStudentView({ tutorId }) {
   const renderCell = (dayIndex, hour) => {
     const slotDate = currentWeek.add(dayIndex, "day").hour(hour).minute(0).second(0);
     const slot = slots.find((s) => dayjs(s.start_time).isSame(slotDate));
-    const isBooked = slot?.is_booked;
+    const isBooked = slot?.is_booked || slot?.is_student_booked; // проверяем оба условия
     const isPast = slotDate.isBefore(today, "hour");
     const isToday = slotDate.isSame(today, "day");
 
@@ -100,7 +98,9 @@ export default function TutorCalendarStudentView({ tutorId }) {
     }
     if (slot && isBooked) {
       bgColor = "#dc3545";
-      title = "Занято";
+      title = slot.is_student_booked
+        ? "У вас уже есть занятие в этот слот"
+        : "Занято";
     }
     if (isPast) {
       bgColor = "#bdbdbd";
@@ -133,7 +133,6 @@ export default function TutorCalendarStudentView({ tutorId }) {
 
   return (
     <div style={{ marginTop: 20, overflowX: "auto" }}>
-      {/* Навигация по неделям */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <button onClick={goToPrevWeek} style={styles.navButton}>← Предыдущая неделя</button>
         <h4>Неделя: {currentWeek.format("DD/MM")} - {currentWeek.add(6, "day").format("DD/MM")}</h4>
@@ -150,9 +149,7 @@ export default function TutorCalendarStudentView({ tutorId }) {
               onChange={(e) => setSelectedSubject(e.target.value)}
             >
               {subjects.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
+                <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </label>

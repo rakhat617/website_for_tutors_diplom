@@ -6,8 +6,10 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
-import TutorProfile from "./pages/TutorProfile";
+import TutorProfile from "./pages/PublicProfile";
 import ChatPage from "./pages/ChatPage";
+import LessonsList from "./components/LessonsList";
+import LessonDetailPage from "./pages/LessonDetailPage";
 
 function App() {
   return (
@@ -28,7 +30,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/tutors/:id" element={<TutorProfile />} />
+          <Route path="/profiles/:id" element={<TutorProfile />} />
+          <Route path="/lessons" element={<LessonsList />} />
+          <Route path="/lessons/:lessonId" element={<LessonDetailPage />} />
         </Routes>
       </main>
     </Router>

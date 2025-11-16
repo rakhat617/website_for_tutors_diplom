@@ -12,17 +12,21 @@ export const AuthProvider = ({ children }) => {
     setLoading(false); // проверка завершена
   }, []);
 
-  const login = (access, refresh, user_id, username) => {
+  const login = (access, refresh, user_id, username, role) => {
     localStorage.setItem("access_token", access);
     localStorage.setItem("refresh_token", refresh);
     localStorage.setItem("user_id", user_id);
     localStorage.setItem("username", username);
+    localStorage.setItem('role', role);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
     setIsAuthenticated(false);
   };
 

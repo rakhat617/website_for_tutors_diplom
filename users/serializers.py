@@ -80,3 +80,12 @@ class ActivateAccountSerializer(serializers.Serializer):
         user.is_active = True
         user.save()
         return user
+    
+
+class UserLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name", "username", "role"]
+
+
+

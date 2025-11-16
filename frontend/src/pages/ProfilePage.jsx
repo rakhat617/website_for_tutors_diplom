@@ -3,8 +3,10 @@ import axiosInstance from "../api/axios";
 import { getProfile } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import TutorCalendar from "../components/TutorCalendar";
+import StudentCalendar from "../components/StudentCalendar";
 import TutorBookings from "../components/TutorBookings";
 import StudentBookings from "../components/StudentBookings";
+import LessonsList from "../components/LessonsList";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -60,116 +62,121 @@ export default function ProfilePage() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.profileCard}>
-        <h2 style={styles.title}>Мой профиль</h2>
-        {message && <p style={styles.message}>{message}</p>}
+      <div style={styles.leftColumn}>
+        <div style={styles.profileCard}>
+          <h2 style={styles.title}>Мой профиль</h2>
+          {message && <p style={styles.message}>{message}</p>}
 
-        <p><b>Имя пользователя:</b> {profile.username}</p>
-        <p><b>Email:</b> {profile.email}</p>
-        <p><b>Роль:</b> {profile.role === "tutor" ? "Репетитор" : "Ученик"}</p>
+          <p><b>Имя пользователя:</b> {profile.username}</p>
+          <p><b>Email:</b> {profile.email}</p>
+          <p><b>Роль:</b> {profile.role === "tutor" ? "Репетитор" : "Ученик"}</p>
 
-        <div style={styles.field}>
-          <b>Имя:</b>
-          {isEditing ? (
-            <input
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-              style={styles.input}
-            />
-          ) : (
-            <p>{profile.first_name}</p>
-          )}
-        </div>
-
-        <div style={styles.field}>
-          <b>Фамилия:</b>
-          {isEditing ? (
-            <input
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-              style={styles.input}
-            />
-          ) : (
-            <p>{profile.last_name}</p>
-          )}
-        </div>
-
-        <div style={styles.field}>
-          <b>Описание:</b>
-          {isEditing ? (
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              style={styles.textarea}
-            />
-          ) : (
-            <p>{profile.bio || "—"}</p>
-          )}
-        </div>
-
-        {profile.role === "tutor" && (
-          <>
-            <div style={styles.field}>
-              <b>Цена за час:</b>
-              {isEditing ? (
-                <input
-                  name="price_per_hour"
-                  type="number"
-                  value={formData.price_per_hour}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
-              ) : (
-                <p>{profile.price_per_hour ? `${profile.price_per_hour} ₸` : "Не указана"}</p>
-              )}
-            </div>
-
-            <div style={styles.field}>
-              <b>Предметы:</b><br />
-              {isEditing ? (
-                <select
-                  multiple
-                  name="subject_ids"
-                  value={formData.subject_ids}
-                  onChange={handleSubjectsChange}
-                  style={styles.select}
-                >
-                  {subjects.map((subj) => (
-                    <option key={subj.id} value={subj.id}>{subj.name}</option>
-                  ))}
-                </select>
-              ) : (
-                <ul>
-                  {profile.subjects.length > 0
-                    ? profile.subjects.map((s) => <li key={s.id}>{s.name}</li>)
-                    : "—"}
-                </ul>
-              )}
-            </div>
-          </>
-        )}
-
-        {!isEditing ? (
-          <button onClick={() => setIsEditing(true)} style={styles.buttonEdit}>
-            ✏️ Редактировать профиль
-          </button>
-        ) : (
-          <div>
-            <button onClick={handleSave} style={styles.buttonSave}>
-              💾 Сохранить
-            </button>
-            <button onClick={() => setIsEditing(false)} style={styles.buttonCancel}>
-              ❌ Отмена
-            </button>
+          <div style={styles.field}>
+            <b>Имя:</b>
+            {isEditing ? (
+              <input
+                name="first_name"
+                value={formData.first_name}
+                onChange={handleChange}
+                style={styles.input}
+              />
+            ) : (
+              <p>{profile.first_name}</p>
+            )}
           </div>
-        )}
 
-        <button onClick={() => navigate("/chat")} style={styles.buttonChat}>
-          💬 Открыть чаты
-        </button>
+          <div style={styles.field}>
+            <b>Фамилия:</b>
+            {isEditing ? (
+              <input
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                style={styles.input}
+              />
+            ) : (
+              <p>{profile.last_name}</p>
+            )}
+          </div>
+
+          <div style={styles.field}>
+            <b>О себе:</b>
+            {isEditing ? (
+              <textarea
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                style={styles.textarea}
+              />
+            ) : (
+              <p>{profile.bio || "—"}</p>
+            )}
+          </div>
+
+          {profile.role === "tutor" && (
+            <>
+              <div style={styles.field}>
+                <b>Цена за час:</b>
+                {isEditing ? (
+                  <input
+                    name="price_per_hour"
+                    type="number"
+                    value={formData.price_per_hour}
+                    onChange={handleChange}
+                    style={styles.input}
+                  />
+                ) : (
+                  <p>{profile.price_per_hour ? `${profile.price_per_hour} ₸` : "Не указана"}</p>
+                )}
+              </div>
+
+              <div style={styles.field}>
+                <b>Предметы:</b><br />
+                {isEditing ? (
+                  <select
+                    multiple
+                    name="subject_ids"
+                    value={formData.subject_ids}
+                    onChange={handleSubjectsChange}
+                    style={styles.select}
+                  >
+                    {subjects.map((subj) => (
+                      <option key={subj.id} value={subj.id}>{subj.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <ul>
+                    {profile.subjects.length > 0
+                      ? profile.subjects.map((s) => <li key={s.id}>{s.name}</li>)
+                      : "—"}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
+
+          {!isEditing ? (
+            <button onClick={() => setIsEditing(true)} style={styles.buttonEdit}>
+              ✏️ Редактировать профиль
+            </button>
+          ) : (
+            <div>
+              <button onClick={handleSave} style={styles.buttonSave}>
+                💾 Сохранить
+              </button>
+              <button onClick={() => setIsEditing(false)} style={styles.buttonCancel}>
+                ❌ Отмена
+              </button>
+            </div>
+          )}
+
+          <button onClick={() => navigate("/chat")} style={styles.buttonChat}>
+            💬 Открыть чаты
+          </button>
+        </div>
+          <div>
+            <LessonsList />
+          </div>
       </div>
 
       <div style={styles.rightColumn}>
@@ -185,10 +192,16 @@ export default function ProfilePage() {
             </div>
           </>
         ) : (
-          <div style={styles.bookingsContainer}>
-            <h3 style={styles.calendarTitle}>📖 Мои бронирования</h3>
-            <StudentBookings />
-          </div>
+          <>
+            <div style={styles.calendarContainer}>
+              <h3 style={styles.calendarTitle}>📅 Моё расписание</h3>
+              <StudentCalendar />
+            </div>
+            <div style={styles.bookingsContainer}>
+              <h3 style={styles.calendarTitle}>📖 Мои бронирования</h3>
+              <StudentBookings />
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -216,12 +229,18 @@ const styles = {
   },
   profileCard: {
     flex: "1 1 350px",
-    maxWidth: "400px",
+    maxWidth: "500px",
     border: "1px solid #ddd",
     borderRadius: "10px",
     padding: "20px",
     backgroundColor: "#fff",
     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  },
+  leftColumn: {
+    flex: "1 1 400px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "25px",
   },
   rightColumn: {
     flex: "1 1 600px",

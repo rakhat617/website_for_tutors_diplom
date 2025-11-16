@@ -1,0 +1,13 @@
+Здравствуйте, {{ booking.student.first_name|default:"ученик" }}!
+
+Напоминаем, что через час у вас состоится урок с репетитором 
+{{ booking.timeslot.tutor.first_name }} {{ booking.timeslot.tutor.last_name }} 
+(логин: {{ booking.timeslot.tutor.username }}).
+
+📚 Предмет: {{ booking.subject }}
+🕒 Время начала: {{ booking.timeslot.start_time|date:"d.m.Y H:i" }}
+
+Не забудьте подготовиться и подключиться вовремя.
+
+С уважением,  
+Команда TutorFinder

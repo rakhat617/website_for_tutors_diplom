@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from users.models import Subject
+from users.models import Subject, Review
 
 User = get_user_model()
 
@@ -35,7 +35,16 @@ class ProfileSerializer(serializers.ModelSerializer):
             "price_per_hour",
             "rating",
         ]
-        read_only_fields = ["id", "username", "email", "role", "rating"]
+        read_only_fields = ["id", "username", "email", "role"]
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source="student.get_full_name", read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ["id", "tutor", "student", "student_name", "rating", "comment", "created_at"]
+        read_only_fields = ["student", "tutor", "created_at", "student_name"]
 
 
 class TutorListSerializer(serializers.ModelSerializer):
